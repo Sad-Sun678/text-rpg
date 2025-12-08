@@ -301,13 +301,13 @@ def TriggerEventFromLibrary(tile, event_name):
             ny = int(round(sy + (dy - sy) * (i / steps)))
             routes.append(world[ny][nx])
 
+    print("[DEBUG:PAYLOAD] PAYLOAD PRESENT :", event_name)
     # Payload data presets
     if event_name == "trade_mission":
-        print ("[DEBUG:PAYLOAD] PAYLOAD PRESENT :", event_name)
         payload_data = {"type": "trade_caravan", "supplies": 5, "wealth": 2, "sub_commodities": {}, "relationship_mod": 2}
 
     elif event_name == "send_aid":
-        payload_data = {"type": "aid_shipment", "supplies": 5, "wealth": 0, "sub_commodities": {}, "relationship_mod": 2}
+        payload_data = {"type": "aid_shipment", "supplies": 5, "wealth": 0, "sub_commodities": {"meat": 0.1}, "relationship_mod": 2}
 
     else:  # raid
         payload_data = {"type": "raid_party", "supplies": 0, "wealth": -8, "sub_commodities": {}, "relationship_mod": -10}

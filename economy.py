@@ -551,8 +551,9 @@ class SettlementEconomyAgent:
     def add_sub_commodity(self, min_amount: float, commodity_name: str):
         subs = self.econ.setdefault("sub_commodities", {})
         current_value = subs.get(commodity_name, 0.0)
-        delta = self.rng.uniform(-abs(min_amount), abs(min_amount))
-        subs[commodity_name] = max(0.0, round(current_value + delta, 3))
+        # delta = self.rng.uniform(-abs(min_amount), abs(min_amount))
+        # subs[commodity_name] = max(0.0, round(current_value + delta, 3))
+        subs[commodity_name] = current_value + min_amount;
         self.econ["sub_commodities"] = subs
         return subs[commodity_name]
 

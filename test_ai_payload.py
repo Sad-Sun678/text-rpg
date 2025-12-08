@@ -36,6 +36,8 @@ def show_info(tile, label):
             if rel:
                 print("Relationships:", rel.to_json())
 
+    print("sub-commodities:", tile.agent.summary()['sub_commodities']);
+
 
 def main():
 

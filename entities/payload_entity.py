@@ -38,7 +38,9 @@ class PayloadComponent:
                 agent.add_wealth(self.payload_data["wealth"] * self.payload_power, 1)
 
             if "sub_commodities" in self.payload_data:
+                print("[DEBUG:PAYLOAD] ADDING SUB COMMODITIES: ", self.payload_data)
                 for cname, amt in self.payload_data["sub_commodities"].items():
+                    print("[DEBUG: PAYLOAD] INSPECTING COMMODITIES: ", cname, amt, self.payload_power)
                     agent.add_sub_commodity(amt * self.payload_power, cname)
 
         print ("[DEBUG:PAYLOAD] CHECKING TILE:", tile)
