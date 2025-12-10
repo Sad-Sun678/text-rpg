@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 
 from math import sqrt
 from noise import pnoise2, pnoise3
+
+from world_utils import SaveWorldStateToMeta
 from worldgen import *
 from ecosystem import *
 from behavior import *
@@ -23,6 +25,7 @@ import world_index_store
 from trade_routes import GenerateTradeRoutes, ApplyTradeEffects, UpdateTradeRouteRisks, UpdateTradeNetwork
 from trade_visual import PrintTradeRoutes
 from entities.update_all import UpdateAllEntities
+from world_state_director import DirectorController
 
 # --- Global variables
 world_time = 0
@@ -147,6 +150,7 @@ def regional_behavior(clock, region):
 
 # --- Main entry
 def Main():
+    director = DirectorController()
     master_seed = 2001
     # Deterministic master seed
     world, macro = CreateWorld(world_time = 0, master_seed = master_seed)
@@ -199,15 +203,21 @@ def Main():
         ApplyTradeEffects(world)
 
     event_manager.register_global(DailyTradeTick)
-
     event_manager.register_global(DailySettlementSnapshot)
-
     event_manager.register_interval(168, UpdateTradeNetwork)
+
+    event_manager.register_global(lambda w, m, c, r: director.update(c.global_tick))
+    event_manager.register_global(lambda w, m, c, r: SaveWorldStateToMeta(w, director))
 
     print("Running 5 in-game days of economy simulation...\n")
     print("Global subscribers:", time_system.subscribers.get("global"))
-    time_system.run(hours=2 * 24)
+    time_system.run(hours=10 * 24)
     print ("DONE")
+
+    meta_tile = world[0][0]
+    meta = meta_tile.get_system("meta")
+
+    print (meta['world_state'])
 
     # PrintTradeRoutes(world, trade_links)
 

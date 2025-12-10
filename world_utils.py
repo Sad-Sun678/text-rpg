@@ -143,3 +143,12 @@ def RecalculateWorldResources(world):
     for row in world:
         for tile in row:
             RecalculateTileResources(tile)
+
+def SaveWorldStateToMeta(world, macro):
+    tile = world[0][0]
+    meta = tile.get_system("meta")
+
+    if meta is None:
+        return  # world not initialized properly
+
+    meta["world_state"] = macro.debug_state()
