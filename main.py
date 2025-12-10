@@ -23,7 +23,7 @@ from tile_state import TileState
 from world_index import WorldIndex
 import world_index_store
 from trade_routes import GenerateTradeRoutes, ApplyTradeEffects, UpdateTradeRouteRisks, UpdateTradeNetwork
-from trade_visual import PrintTradeRoutes
+from trade_visual import PrintTradeRoutes, RenderTradeRouteMap
 from entities.update_all import UpdateAllEntities
 from world_state_director import DirectorController
 
@@ -183,15 +183,16 @@ def Main():
 
     # PrintWorldWithCoords(world)
     PrintTradeRoutes(world, trade_links)
+    RenderTradeRouteMap(world, trade_links, tile_size=24, filename="routes.png")
     # Create TimeSystem & EventManager
-    time_system = TimeSystem(start_day=0, start_hour=6)
+    time_system = TimeSystem(start_day=0, start_hour=0)
     event_manager = EventManager(world, macro, time_system)
 
     # Settlement AI
     event_manager.register_hourly(UpdateAllEntities)
 
     # Register economic and weather updates
-    event_manager.register_global(lambda w, m, c, r: SimulateSettlementEconomy(w))
+    event_manager.register_global(lambda world, macro, time, rng, director=director: SimulateSettlementEconomy(world, director))
     event_manager.register_global(lambda w, m, c, r: UpdateWeather(w, c.global_tick))
     event_manager.register_interval(48, lambda w, m, c, r: SimulateEco(w, world_time=c.global_tick))
     event_manager.register_interval(48, lambda w, m, c, r: CheckAndTriggerEcoEvents(w, m, c.global_tick))

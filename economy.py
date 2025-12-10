@@ -335,7 +335,7 @@ def AttachSettlementAgents(world):
     # NOW initialize relationships
     InitializeAllRelationships(world)
 
-def SimulateSettlementEconomy(world, rng=None):
+def SimulateSettlementEconomy(world, director=None, rng=None):
     import random
     rng = rng or random.Random()
 
@@ -369,6 +369,8 @@ def SimulateSettlementEconomy(world, rng=None):
         cons = population * BASE_CONS_PER_CAPITA * (1.0 + 0.1 * stress_factor)
 
         delta = prod - cons
+        if delta < 0:
+            director.register_signal("econ_food_shortage", delta)
 
         econ["supplies"] = max(0.0, econ["supplies"] + sigmoid_lite(delta, 5.0))
 

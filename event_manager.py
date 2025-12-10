@@ -11,7 +11,7 @@ class EventManager:
     Manages callbacks that modify tile, region, or economy data each tick.
     """
 
-    def __init__(self, world, macro, time_system: TimeSystem):
+    def __init__(self, world, macro, time_system: TimeSystem, director=None):
         self.world = world
         self.macro = macro
         self.time_system = time_system
