@@ -10,6 +10,7 @@ class PersonalityComponent(Component):
             "greedy": 0.5,
             "aggressive": 0.5,
             "cooperative": 0.5,
+            "ambitious": 0.5,
         }
 
     def get(self, trait):

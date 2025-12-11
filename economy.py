@@ -10,7 +10,7 @@ REGION_TRAIT_BONUSES = {
     "mining": ["iron", "stone", "crystallized water"],
     "fortress": ["iron", "stone"],
     "fertile": ["root_tubers", "fungal_clusters"],
-    "abundant_wood": ["timber", "golden timber"],
+    "abundant_wood": ["timber", "golden_timber"],
     "dense_fauna": ["meat"],
     "fishing": ["fish", "reeds"],
     "nomads": ["spices", "iron grass"],

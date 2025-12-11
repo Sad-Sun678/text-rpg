@@ -213,13 +213,58 @@ class SettlementAIComponent(Component):
 
                 return bh.Status.FAILURE
 
+        class CheckAmbitiousState(bh.Node):
+            def tick(self):
+                econ = entity.tile.get_system("economy")
+                pers = entity.get("personality")
+                if not econ:
+                    return bh.Status.FAILURE
+
+                # Prosperity Check: Only act when healthy (Supplies are NOT in crisis)
+                is_stable = econ["supplies"] > econ["population"] * 0.8
+
+                # Ambition Check: Is the trait score above threshold?
+                is_ambitious = pers.get("ambitious") > 0.6
+
+                # Wealth Check: Only invest ambition if there's wealth to risk
+                is_wealthy = econ.get("wealth", 0) > 150
+
+                if is_stable and is_ambitious and is_wealthy:
+                    return bh.Status.SUCCESS
+                return bh.Status.FAILURE
+
+        # 📌 NEW NODE 2: Execute ambitious action (Raid or Hoard)
+        class HandleAmbitiousAction(bh.Node):
+            def tick(self):
+                action = entity.get("action")
+                pers = entity.get("personality")
+
+                # If Aggressive, ambition manifests as expansion/raid
+                if pers.get("aggressive") > 0.7:
+                    # Trigger opportunistic raid event (seeks vulnerable target)
+                    action.trigger_event("raid")
+                    entity.tile.add_tag("seeking_dominance")
+                    print("[AI: AMBITION] Triggered RAID for expansion.")
+
+                # If Cautious/Greedy, ambition manifests as hoarding wealth
+                else:
+                    # Schedule a financial event to grow wealth long-term
+                    from tile_events import ScheduleTileEvent
+                    ScheduleTileEvent(entity.tile, "market_boom",
+                                      start_tick=entity.tile.get_system("economy").get("id", 0) % 5 + 1)
+                    entity.tile.add_tag("hoarding_wealth")
+                    print("[AI: AMBITION] Triggered Market Boom for hoarding.")
+
+                return bh.Status.SUCCESS
+
         # Compose BT
         root = bh.Selector([
             bh.Sequence([CheckThreat(), DefendAction()]),  # Priority 1: DEFEND
             CheckAndExecuteRaid(),  # Priority 2: RAID (Opportunistic)
             CheckAndExecuteAid(),  # Priority 3: AID (Diplomatic)
             bh.Sequence([CheckSupplyCrisis(), HandleSupplyAction()]),  # Priority 4: SELF-HELP (if raid/aid failed)
-            bh.Sequence([CheckProsperity(), CelebrateAction()]),
+            bh.Sequence([CheckProsperity(), CelebrateAction()]), # Priority 5 : Handle prosperity
+            bh.Sequence([CheckAmbitiousState(), HandleAmbitiousAction()]), # Priority 6: Handle Ambition
             Idle()
         ])
         # attach onto AI component (entity.get("ai").behavior_tree)

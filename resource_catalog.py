@@ -124,7 +124,7 @@ RESOURCE_CATALOG = {
         "weight": 3.0,
         "desc": "Metal for tools and weapons."
     },
-    "golden timber": {
+    "golden_timber": {
         "type": "material",
         "terrain_bias": ["forest"],
         "tag_bias": [],
@@ -191,7 +191,7 @@ RESOURCE_CATALOG = {
         "weight": 0.1,
         "desc": "Sacred mineral sold by monks of the montane forests."
     },
-    "ashen timber": {
+    "ashen_timber": {
         "type": "luxury",
         "terrain_bias": ["forest"],
         "tag_bias": [],
