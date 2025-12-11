@@ -254,7 +254,7 @@ def LogEntityEvent(entity, event_type: str, message: str, target_entity=None):
     # Add target information if provided
     if target_entity:
         target_info = _get_entity_info(target_entity)
-        log_parts.append(f"-> {target_info['name']} {target_info['pos']}")
+        log_parts.append(f"→ {target_info['name']} {target_info['pos']}")
 
     log_parts.append(f": {message}")
 

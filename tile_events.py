@@ -126,7 +126,7 @@ def RegisterTileEvent(tile, event_name: str, duration: int, effects: Dict[str, A
     LogEntityEvent(
         tile,
         "EVENT",
-        f"Gained '{event_name}' for {duration} ticks)",
+        f"Gained '{event_name}' for {duration} ticks.",
     )
 
 
@@ -333,7 +333,7 @@ def TriggerEventFromLibrary(tile, event_name):
         LogEntityEvent(
             tile,
             "EVENT:PAYLOAD",
-            f"Using trade route: {sender_id} → {receiver_id}.",
+            f"Using trade route {sender_id} → {receiver_id}.",
             target_entity=dest
         )
     else:

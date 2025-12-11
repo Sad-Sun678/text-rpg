@@ -39,7 +39,7 @@ class PhysicalComponent(Component):
                 LogEntityEvent(
                     tile,
                     "PAYLOAD",
-                    f"Payload arrived on: ({tile.x}, {tile.y}) with destination: {payload_comp.destination}. Payload content: {payload_comp.payload_data}",
+                    f"Payload arrived on ({tile.x}, {tile.y}) with destination of {payload_comp.destination}. Payload content: {payload_comp.payload_data}",
                 )
                 # tile.add_tag("caravan_was_here")
             except:
