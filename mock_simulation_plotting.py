@@ -31,7 +31,9 @@ def PlotSettlementInteractionOverTime(world, macro, time_system, days=5):
     ticks = []
 
     # create trade routes once
-    trade_links = GenerateTradeRoutes(world)
+    trade_links_sim = GenerateTradeRoutes(world)
+    meta = world[0][0].get_system("meta")
+    meta["trade_links"] = trade_links_sim
 
     total_hours = days * 24
     for _ in range(total_hours):
@@ -41,7 +43,7 @@ def PlotSettlementInteractionOverTime(world, macro, time_system, days=5):
 
         # apply trade effects once per day (when hour == 0)
         if time_system.clock.local_tick == 0:
-            ApplyTradeEffects(world, trade_links)
+            ApplyTradeEffects(world)
 
         # record wealth over time
         ticks.append(time_system.clock.global_tick * 24 + time_system.clock.local_tick)

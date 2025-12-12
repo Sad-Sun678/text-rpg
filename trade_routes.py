@@ -25,7 +25,7 @@ import heapq
 from itertools import count
 import math
 
-from world_utils import GetNearestTileWithSystem, GetTilesWithinRadius, GetActiveTiles
+from world_utils import GetNearestTileWithSystem, GetTilesWithinRadius, GetActiveTiles, LogEntityEvent
 import world_index_store
 
 # -------------------------------------------------------------------
@@ -687,7 +687,13 @@ def UpdateTradeNetwork(world, macro, clock, region):
     meta = world[0][0].get_system("meta")
     meta["trade_links"] = new_trade_links
 
-    print(f"[{clock}] Trade Network Recalculated! {len(new_trade_links)} link groups renewed.")
+    LogEntityEvent(
+        None,
+        "TRADE NETWORK",
+        f"[{clock}] Trade Network Recalculated! {len(new_trade_links)} link groups renewed.",
+    )
+
+    # print(f"[{clock}] Trade Network Recalculated! {len(new_trade_links)} link groups renewed.")
 
 def UpdateTradeRouteRisks(world):
     """

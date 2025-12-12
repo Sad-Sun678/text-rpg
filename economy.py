@@ -2,7 +2,7 @@
 from random import Random
 from tile_state import TileState
 from resource_catalog import GetResourcesForTerrain, GetResourcesForTile, GetResourceType
-from world_utils import GetActiveTiles
+from world_utils import GetActiveTiles, LogEntityEvent
 from entities.settlement_factory import CreateSettlementAI
 import math
 
@@ -407,7 +407,11 @@ def SimulateSettlementEconomy(world, director=None, rng=None):
         pp = 0.7 * econ["power_projection"] + 0.3 * pp_base
         econ["power_projection"] = pp
 
-        print ("SOME PP: ", econ["power_projection"])
+        LogEntityEvent(
+            tile,
+            "ECONOMY SIMULATION",
+            f"Current settlement power projection is {econ['power_projection']}.",
+        )
 
         # econ["price_multiplier"] = ComputeSupplyDemandPrice(econ)
         econ["price_multiplier"] = econ["price_multiplier"] = 1.0 + sigmoid_lite((cons - prod), 10.0) * 0.5
