@@ -4,6 +4,7 @@ from .entity import Entity
 from .components.physical import PhysicalComponent
 from .components.action import ActionComponent
 from world_utils import LogEntityEvent
+import math
 
 class PayloadComponent:
     def __init__(self, source_tile, dest_tile, routes, payload_data, payload_power, sender_entity, entity):
@@ -59,21 +60,46 @@ class PayloadComponent:
         # --- Relationship Integration ---
         for ent in list(tile.entities):
             rel = ent.components.get("relationship")
+
             LogEntityEvent(
                 tile,
                 "PAYLOAD",
-                f"Inspecting relationship table {rel.to_json()}",
+                f"Inspecting payload type: {self.payload_data.get('type', 'N/A')}",
             )
+
+            # --- RUMOR LOGIC ADDED HERE ---
+            if self.payload_data.get("type") == "rumor_echo":
+                LogEntityEvent(
+                    tile,
+                    "PAYLOAD",
+                    f"Received rumor about sender ({self.sender_id}): '{self.payload_data.get('rumor_text', 'N/A')}'",
+                )
+            # --- END RUMOR LOGIC ---
+
+            if ent.type == "settlement_ai":
+                LogEntityEvent(
+                    tile,
+                    "PAYLOAD",
+                    f"Inspecting relationship table {rel.to_json()}",
+                )
             if rel and self.sender_id:
                 delta = self.payload_data.get("relationship_mod", 0)
+                change = delta * self.payload_power
 
                 LogEntityEvent(
                     tile,
                     "PAYLOAD",
-                    f"Change perceived relationship of {self.sender_id} to {int(delta * self.payload_power)}",
+                    f"Change perceived relationship of {self.sender_id} to {change}",
                 )
 
-                rel.modify(self.sender_id, int(delta * self.payload_power))
+                if self.payload_data["type"] == 'rumor_echo':
+                    LogEntityEvent(
+                        tile,
+                        "PAYLOAD",
+                        f"Rumor in effect : {self.payload_data['rumor_text']} → changing relationship {self.sender_id} to {change}",
+                    )
+
+                rel.modify(self.sender_id, change)
 
         # --- Tags / Flavor ---
         # tile.add_tag(f"payload_arrived_{self.payload_data.get('type','generic')}")

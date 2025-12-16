@@ -264,7 +264,7 @@ def TriggerEventFromLibrary(tile, event_name):
     from world_utils import GetActiveTiles
 
     # NON-PAYLOAD EVENTS → normal behavior
-    if event_name not in ["trade_mission", "send_aid", "raid"]:
+    if event_name not in ["trade_mission", "send_aid", "raid", "spread_rumor"]:
         data = TILE_EVENT_LIBRARY[event_name]
         RegisterTileEvent(tile, event_name, data["duration"], data["effects"], data.get("desc",""))
         return
@@ -363,6 +363,10 @@ def TriggerEventFromLibrary(tile, event_name):
     elif event_name == "send_aid":
         payload_data = {"type": "aid_shipment", "supplies": 5, "wealth": 0, "sub_commodities": {"meat": 0.1}, "relationship_mod": 2}
 
+    elif event_name == "spread_rumor":
+        HandleSpreadRumor(world, tile.entities[0], routes)
+        return 1
+
     else:  # raid
         payload_data = {"type": "raid_party", "supplies": 0, "wealth": -8, "sub_commodities": {}, "relationship_mod": -10}
 
@@ -430,3 +434,40 @@ def ScheduleTileEvent(tile, event_name: str, start_tick: int):
     econ = tile.get_system("economy")
     name = econ["name"] if econ else f"Tile({tile.x},{tile.y})"
     print(f"[Scheduled] {name} → '{event_name}' at tick {start_tick}")
+
+# In response to action.trigger_event("spread_rumor"):
+def HandleSpreadRumor(world, entity, routes):
+    source_tile = entity.tile
+    target_tile = getattr(source_tile, "temp_dest", None)
+    payload_data = getattr(source_tile, "temp_payload_data", None)
+
+    if target_tile and payload_data:
+        # Create a payload entity carrying the rumor
+        from entities.payload_entity import CreatePayloadEntity
+
+        e = CreatePayloadEntity(
+            world,
+            source_tile,
+            target_tile,
+            payload_data, # Contains {"type": "rumor_echo", "relationship_mod": X, ...}
+            routes=routes,
+            sender_entity=entity,
+            power=0.5 # A default power for rumors
+        )
+        # Cleanup
+        del source_tile.temp_dest
+        del source_tile.temp_payload_data
+
+        source_tile.entities.append(e)
+        if not hasattr(source_tile, "payloads"):
+            source_tile.payloads = []
+        source_tile.payloads.append(e)
+
+        LogEntityEvent(
+            source_tile,
+            "EVENT:PAYLOAD",
+            f"spread_rumor dispatched from ({source_tile.x},{source_tile.y}) → ({target_tile.x},{target_tile.y}).",
+            target_entity=target_tile.entities[0]
+        )
+
+    return True

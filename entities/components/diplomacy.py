@@ -2,6 +2,7 @@
 from ..component import Component
 from world_utils import GetNearestTileWithSystem, GetActiveTiles, LogEntityEvent
 import world_index_store
+import random
 
 class DiplomacyComponent(Component):
     def __init__(self):
@@ -119,9 +120,89 @@ class DiplomacyComponent(Component):
         # target_tile.add_tag("received_aid")
         return True
 
+    def get_rumor_content(self):
+        """Generates a rumor about the source settlement's perceived state (an 'echo')."""
+        econ = self.entity.tile.get_system("economy")
+        if not econ:
+            # Cannot generate rumor if no economy system
+            return None, None, 0.0
+
+        my_id = self.entity.id
+        my_supplies = econ.get("supplies", 0)
+
+        # Base relationship modifier (rel_mod) based on self-condition
+        if my_supplies < 10:
+            rumor_type = "self_shortage_crisis"
+            rumor_text = f"A grim rumor: {my_id} is facing a severe supply crisis and is becoming desperate."
+            # A crisis might cause other settlements to be wary of me (negative mod)
+            rel_mod = -1.0
+        elif my_supplies > 50:
+            rumor_type = "self_wealth_prosperity"
+            rumor_text = f"Word of {my_id}'s booming economy and vast resources spreads."
+            # Prosperity might cause respect (positive mod)
+            rel_mod = 1.0
+        else:
+            rumor_type = "self_stable_trade"
+            rumor_text = f"{my_id} is a reliable and steady trading hub."
+            rel_mod = 1.0  # Slightly positive/neutral modifier
+
+        return rumor_type, rumor_text, rel_mod
+
+    def spread_rumor(self, world):
+        """
+        Initiates the spread of a rumor (echo) about this settlement to a random neighbor.
+        Uses the action/event system pattern established by offer_aid.
+        """
+        source_tile = self.entity.tile
+        all_settlements = GetActiveTiles(world, "economy")
+
+        # Filter out self
+        other_settlements = [t for t in all_settlements if t != source_tile]
+
+        if not other_settlements:
+            return False
+
+        # Randomly select a target to spread the rumor to.
+        target_tile = random.choice(other_settlements)
+
+        rumor_type, rumor_text, rel_mod = self.get_rumor_content()
+
+        if not rumor_type:
+            return False
+
+        rumor_payload = {
+            # Use a distinct type for identification in PayloadComponent.on_arrival
+            "type": "rumor_echo",
+            "relationship_mod": rel_mod,  # The modifier to apply to the receiver's opinion of the sender
+            "rumor_type": rumor_type,
+            "rumor_text": rumor_text,
+            # Rumor data could also include the "Belief" class info if you create one
+        }
+
+        LogEntityEvent(
+            source_tile,
+            "DIPLOMACY",
+            f"Initiating rumor spread: '{rumor_text}' to {target_tile.x}, {target_tile.y}.",
+            target_entity=target_tile
+        )
+
+        # Store the target tile and rumor data for the event manager to pick up.
+        # This assumes the event handler for 'spread_rumor' will read temp_dest and temp_payload_data,
+        # and then call CreatePayloadEntity (similar to how 'send_aid' is assumed to work).
+        source_tile.temp_dest = target_tile
+        source_tile.temp_payload_data = rumor_payload
+
+        action = self.entity.get("action")
+        action.trigger_event("spread_rumor")  # New event trigger
+
+        return True
+
     def update_relations(self, target_id, delta):
         self.relations[target_id] = self.relations.get(target_id, 0.0) + delta
 
     def update(self, world):
+        # Periodically spread rumors. A random chance is used as a stand-in for a timed event.
+        if random.random() < 0.1:  # ~10% chance to spread a rumor per update tick
+            self.spread_rumor(world)
         # nothing here — diplomacy is invoked by AI logic
         pass
