@@ -37,6 +37,10 @@ class Entity:
         if "relationship" in self.components:
             data["relationship"] = self.components["relationship"].to_json()
 
+        # Add tendency if present
+        if "tendency" in self.components:
+            data["tendency"] = self.components["tendency"].to_json()
+
         return data
 
     def __repr__(self):

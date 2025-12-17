@@ -568,11 +568,24 @@ def ComputeGeoPressure(world, rng):
             # Movement cost is 1 (plains) to 4 (mountain/deep_water)
             mobility_constraint = round(min(1.0, max(0.0, (cost - 1.0) / 3.0)), 3)
 
-            # Population Density: Checks for settlement presence (1=max, -1=min)
-            density_val = 0.0
-            if tile.terrain == "settlement":
-                density_val = 0.8
-            population_density = round(min(1.0, max(-1.0, (density_val * 2) - 1.0)), 3)
+            # --- Population Density (real) ---
+            population = 0
+            if tile.get_system("economy"):
+                population = tile.get_system("economy").get("population", 0)
+
+            usable_space = 1.0 / max(0.5, tile.movement_cost)
+            DENSITY_SOFT_CAP = 50  # tweakable
+
+            raw_density = population / (usable_space * DENSITY_SOFT_CAP)
+
+            base_density = (raw_density * 2) - 1
+            base_density = max(-1.0, min(1.0, base_density))
+
+            compression = 0.4 if tile.has_tag("permafrost") else 0.0
+
+            population_density = base_density + compression
+            population_density = max(-1.0, min(1.0, population_density))
+            population_density = round(population_density, 3)
 
             # Isolation Level: Water bodies reduce isolation (1=max, -1=min)
             isolation_val = 0.5

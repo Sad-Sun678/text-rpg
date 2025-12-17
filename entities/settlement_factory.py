@@ -10,6 +10,7 @@ from .components.ai import AIComponent
 from .components.emotion import EmotionComponent
 from .components.diplomacy import DiplomacyComponent
 from .components.relationship import RelationshipComponent
+from .components.tendency import TendencyComponent
 
 
 def CreateSettlementAI(tile):
@@ -18,6 +19,14 @@ def CreateSettlementAI(tile):
         etype="settlement_ai",
         tile=tile
     )
+
+    geo_pressure = tile.get_system("geo_pressure") or {
+        "resource_stability": 0, "environmental_threat": 0,
+        "mobility_constraint": 0, "isolation_level": 0
+    }
+    tendency = TendencyComponent()
+    tendency.apply_geo_bias(geo_pressure)
+
     e.add_component(PerceptionComponent(radius=5))
     e.add_component(MemoryComponent())
     e.add_component(PersonalityComponent())
@@ -28,5 +37,6 @@ def CreateSettlementAI(tile):
     e.add_component(EmotionComponent())
     e.add_component(DiplomacyComponent())
     e.add_component(SettlementAIComponent())
+    e.add_component(tendency)
     # tile.entities.append(e)
     return e
