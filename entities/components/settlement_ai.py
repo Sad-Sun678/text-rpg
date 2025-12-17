@@ -367,7 +367,7 @@ class SettlementAIComponent(Component):
             bh.Sequence([CheckSupplyCrisis(), HandleSupplyAction()]),  # Priority 4: SELF-HELP (if raid/aid failed)
             bh.Sequence([CheckProsperity(), CelebrateAction()]), # Priority 5 : Handle prosperity
             bh.Sequence([CheckAmbitiousState(), HandleAmbitiousAction()]), # Priority 6: Handle Ambition
-            bh.Sequence([CheckCanClaimTile(), ExecuteClaimAction()]),  # 📌 NEW Priority 7: CLAIM TILE
+            bh.Sequence([CheckCanClaimTile(), ExecuteClaimAction()]),  # Priority 7: CLAIM TILE
             Idle()
         ])
         # attach onto AI component (entity.get("ai").behavior_tree)
